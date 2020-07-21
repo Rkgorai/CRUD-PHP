@@ -1,9 +1,5 @@
 <?php
 
-    if ( isset($_POST['cancel']) ) {
-    header('Location: index.php');
-    return;
-}
     $salt = 'XyZzy12*_';
     $stored_hash = '1a52e17fa899cf40fb04cfc42e6352f1';  // Pw is php123
     $md5 = hash('md5', 'XyZzy12*_php123');
@@ -20,16 +16,10 @@
             return;
 
         } else {
-            if (strpos($_POST['email'], '@') == false) { 
-                $_SESSION["error"] = "Email must have an at-sign (@)";
-                header( 'Location: login.php' ) ; 
-                error_log("Login fail ".$_SESSION['name'] );
-                return;
-            } else {
                 $check = hash('md5', $salt.$_POST['pass']);
                 if ( $check == $stored_hash) {
                     $_SESSION["name"] = $_POST["email"];
-                    header( 'Location: view.php' ) ;
+                    header( 'Location: index.php' ) ;
                     error_log("Login success ".$_SESSION['name']);
                     return;
                 } else {
@@ -38,7 +28,7 @@
                     error_log("Login fail ".$_SESSION['name']." $check");
                     return;
                 }
-            }
+            
 
             
         }
@@ -61,12 +51,12 @@
     }
 ?>
 <form method="POST">
-<label for="nam">Email</label>
+<label for="nam">User Name</label>
 <input type="text" name="email" id="nam"><br/>
 <label for="id_1723">Password</label>
 <input type="text" name="pass" id="id_1723"><br/>
 <input type="submit" value="Log In">
-<input type="submit" name="cancel" value="Cancel">
+<a href="index.php">Cancel</a>
 </form>
 <p>
 For a password hint, view source and find a password hint
