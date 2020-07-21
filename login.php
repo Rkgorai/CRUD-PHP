@@ -1,5 +1,6 @@
 <?php
 require_once 'pdo.php';
+require_once 'util.php';
 
 session_start();
 unset($_SESSION['name']);
@@ -43,17 +44,14 @@ if ( isset($_POST['email']) && isset($_POST["pass"]) ) {
 <!DOCTYPE html>
 <html>
 <head>
-<?php require_once "bootstrap.php"; ?>
+<?php require_once "head.php"; ?>
 <title>RAHUL KISHORE GORAI's Login Page</title>
 </head>
 <body>
 <div class="container">
 <h1>Please Log In</h1>
 <?php
-    if ( isset($_SESSION["error"]) ) {
-        echo('<p style="color:red">'.htmlentities($_SESSION['error'])."</p>\n");
-        unset($_SESSION["error"]);
-    }
+    flashMessages();
 ?>
 <form method="POST">
 <label for="nam">Email</label>

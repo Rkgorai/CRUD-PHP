@@ -1,58 +1,49 @@
-<?php
+<?php 
 require_once "pdo.php";
-    session_start();
-    if ( ! isset($_SESSION["name"])) {
-    die('Not logged in');
+require_once "util.php";
+session_start();
+ ?>
+
+ <!DOCTYPE html>
+ <html>
+ <head>
+ 	<title>Viewing</title>
+ 	<?php require_once "head.php"; ?>
+ </head>
+ <body>
+ <div class="container">
+ <h1>Profile Information</h1>
+<?php 
+flashMessages();
+$i = 0;
+$stmt = $pdo->prepare("SELECT * FROM profile  where profile_id = :xyz");
+$stmt->execute(array(":xyz" => $_GET['profile_id']));
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+echo '<p>First Name: '.$row['first_name'];
+echo '</p><p>Last Name: '.$row['last_name'];
+echo '</p><p>Email: '.$row['email'];
+echo '</p><p>Headline: <br>'.$row['headline'];
+echo '</p><p>Summary: <br>'.$row['summary'];
+echo "</p><p>";
+$stmt = $pdo->prepare('SELECT * FROM position where profile_id = :abc');
+$stmt->execute(array(":abc" => $_GET['profile_id']));
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+if(empty($row['year']) === false){
+	if ($i<1) {
+		# code...
+		echo "Positions :<ul>";
+		$i++;
 	}
-
-	$stmt = $pdo->query("SELECT make, year, mileage FROM autos");
-	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-?>
-
-<!DOCTYPE html>
-<html>
-<head>
-	<title>RAHUL KISHORE GORAI</title>
-	<?php require_once "bootstrap.php"; ?>
-</head>
-<body>
-	<div class="container">
-	<h1>Tracking Autos for 
-	<?php
-		if ( isset($_SESSION['name']) ) {
-		    echo $_SESSION['name'];
-		    echo "\n";
-		}
-	?>
-	</h1>
-	<?php 
-	if (isset($_SESSION['success'])) {
-		echo('<p style="color: green;">'.htmlentities($_SESSION['success'])."</p>\n");
-		unset($_SESSION['success']);
-	}
-	?>
-
-	<h2>Automobiles</h2>
-	<ul>
-	<p>
-	<?php
-	foreach ( $rows as $row ) {
-    echo "<li>";
-    echo(htmlentities($row['year'])); 
-    echo(" ");
-    echo(htmlentities($row['make']));
-    echo(" / ");
-    echo(htmlentities($row['mileage']));
-    echo("\n");
-	}
-	?>
-	</p>
-	</ul>
-	<p>
-	<a href="add.php">Add New</a> |
-	<a href="logout.php">Logout</a>
-	</p>
-	</div>
-
-</body>
-</html>
+	
+	
+}
+echo "<li>";
+echo $row['year'].' '.$row['description'];
+echo "</li>";
+}
+echo "</ul></p>";
+ ?>
+<a href="index.php">Done</a>
+ </div>
+ </body>
+ </html>
