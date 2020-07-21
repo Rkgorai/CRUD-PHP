@@ -28,6 +28,13 @@ if ( isset($_POST['first_name']) && isset($_POST['email']) && isset($_POST['head
         return;
     }
 
+    $msg = validateEdu();
+    if (is_string($msg)){
+        $_SESSION['error'] = $msg;
+        header("Location: add.php");
+        return;
+    }
+
 
     $sql = ('UPDATE profile SET
                 user_id = :uid,
@@ -53,41 +60,30 @@ if ( isset($_POST['first_name']) && isset($_POST['email']) && isset($_POST['head
     $stmt->execute(array(':pid' => $_REQUEST['profile_id'])
     );
 
+    $stmt = $pdo->prepare('DELETE FROM education
+        WHERE profile_id = :pid');
+    $stmt->execute(array(':pid' => $_REQUEST['profile_id'])
+    );
+
     // Insert the position entries
-
-        $rank = 1;
-        for($i=1; $i<=9; $i++) {
-          if ( ! isset($_POST['year'.$i]) ) continue;
-          if ( ! isset($_POST['desc'.$i]) ) continue;
-
-          $year = $_POST['year'.$i];
-          $desc = $_POST['desc'.$i];
-
-          $stmt = $pdo->prepare('INSERT INTO position
-            (profile_id, rank, year, description)
-            VALUES ( :pid, :rank, :year, :desc)');
-
-          $stmt->execute(array(
-          ':pid' => $_REQUEST['profile_id'],
-          ':rank' => $rank,
-          ':year' => $year,
-          ':desc' => $desc)
-          );
-
-          $rank++;
-
-        }
+    insertPositions($pdo, $_REQUEST['profile_id']);
+    insertEducations($pdo, $_REQUEST['profile_id']);
     
+
 
     $_SESSION['success'] = 'Profile updated';
     header( 'Location: index.php' ) ;
     return;
 }
 
+//Load Up POsitions and Educations
 $positions = loadPos($pdo, $_REQUEST['profile_id']);
+$educations = loadEdu($pdo, $_REQUEST['profile_id']);
 // print_r($positions);
+//print_r($educations);
 
 $pos = sizeof($positions);
+$edu = sizeof($educations);
 
 $stmt = $pdo->prepare("SELECT * FROM profile where profile_id = :xyz");
 $stmt->execute(array(":xyz" => $_GET['profile_id']));
@@ -136,18 +132,36 @@ $profile_id = htmlentities($_REQUEST['profile_id']);
     <textarea name="summary" rows="8" cols="80"><?= $summary ?></textarea></p>
     </p>
     <p>
+    Education: <input type="submit" id="addEdu" value="+">
+    <div id="edu_fields">
+        <?php 
+        for ($i=1; $i <= $edu; $i++) { 
+            // $j = $i+1;
+            $ye = $educations[$i-1]['year'];
+            $de = $educations[$i-1]['name'];
+            echo('<div id = "edu'.$i.'">');
+            echo('<p>Year: <input type="text" name="edu_year'.$i.'" value="'.$ye.'">');
+            echo(' <input type="button" value="-" onclick="$(\'#edu'.$i.'\').remove();return false;">');
+            echo '</p>';
+            echo ('<p>School: <input type="text" size="80" name="edu_school'.$i.'" class="school" value="'.$de.'" />\
+            </p></div>');
+        }
+         ?>
+    </div>
+    </p>
+    <p>
     Position: <input type="submit" id="addPos" value="+">
     <div id="position_fields">
         <?php 
-        for ($i=0; $i < $pos; $i++) { 
-            $j = $i+1;
-            $ye = $positions[$i]['year'];
-            $de = $positions[$i]['description'];
-            echo('<div id = "position'.$j.'">');
-            echo('<p>Year: <input type="text" name="year'.$j.'" value="'.$ye.'">');
-            echo(' <input type="button" value="-" onclick="$(\'#position'.$j.'\').remove();return false;">');
+        for ($i=1; $i <= $pos; $i++) { 
+            // $j = $i+1;
+            $ye = $positions[$i-1]['year'];
+            $de = $positions[$i-1]['description'];
+            echo('<div id = "position'.$i.'">');
+            echo('<p>Year: <input type="text" name="year'.$i.'" value="'.$ye.'">');
+            echo(' <input type="button" value="-" onclick="$(\'#position'.$i.'\').remove();return false;">');
             echo '</p>';
-            echo('<textarea name="desc'.$j.'" rows="8" cols="80">'.$de.'</textarea></div>');
+            echo('<textarea name="desc'.$i.'" rows="8" cols="80">'.$de.'</textarea></div>');
         }
          ?>
 
@@ -162,6 +176,7 @@ $profile_id = htmlentities($_REQUEST['profile_id']);
 <script>
     
 countPos = <?= $pos ?>;
+countEdu = <?= $pos ?>;
 
 // http://stackoverflow.com/questions/17650776/add-remove-html-inside-div-using-javascript
 $(document).ready(function(){
@@ -182,6 +197,28 @@ $(document).ready(function(){
             onclick="$(\'#position'+countPos+'\').remove();return false;"></p> \
             <textarea name="desc'+countPos+'" rows="8" cols="80"></textarea>\
             </div>');
+    });
+
+        $('#addEdu').click(function(event){
+        event.preventDefault();
+        if ( countEdu >= 9 ) {
+            alert("Maximum of nine education entries exceeded");
+            return;
+        }
+        countEdu++;
+        window.console && console.log("Adding education "+countEdu);
+
+        $('#edu_fields').append(
+            '<div id="edu'+countEdu+'"> \
+            <p>Year: <input type="text" name="edu_year'+countEdu+'" value="" /> \
+            <input type="button" value="-" onclick="$(\'#edu'+countEdu+'\').remove();return false;"><br>\
+            <p>School: <input type="text" size="80" name="edu_school'+countEdu+'" class="school" value="" />\
+            </p></div>'
+        );
+
+        $('.school').autocomplete({
+            source: "school.php"
+        });
     });
 });
 </script>
