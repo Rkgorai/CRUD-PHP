@@ -12,9 +12,14 @@
 </p>
 <p>
 Attempt to go to 
-<a href="autos.php">autos.php</a> without logging in - it should fail with an error message.
+<a href="add.php">add.php</a> without logging in - it should fail with an error message.
+</p>
 <p>
-<a href="https://www.wa4e.com/assn/autosdb/" target="_blank">Specification for this Application</a>
+Attempt to go to 
+<a href="view.php">view.php</a> without logging in - it should fail with an error message.
+</p>
+<p>
+<a href="https://www.wa4e.com/assn/autosess/" target="_blank">Specification for this Application</a>
 </p>
 <p>
 <b>Note:</b> Your implementation should retain data across multiple
